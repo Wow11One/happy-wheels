@@ -1,0 +1,23 @@
+# Various IDEs and Editors
+.vscode/
+.idea/
+**/*~
+
+# Mac OSX temporary files
+.DS_Store
+**/.DS_Store
+
+# frontend code
+node_modules/
+dist/
+.svelte-kit/
+
+# environment variables
+.env
+env/*
+!env/.env.example
+data
+
+declarations/
+target/
+.dfx

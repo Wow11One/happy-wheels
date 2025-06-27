@@ -1,0 +1,40 @@
+type Tire = record {
+  id : text;
+  tread_depth_mm : float32;
+  production_year : nat16;
+  image_url : text;
+  size : text;
+  sent_to_recycle : bool;
+  season : text;
+  user_id : text;
+  service_id : opt text;
+  brand : text;
+  price : opt nat32;
+};
+type Transaction = record {
+  id : text;
+  description : text;
+  user_id : text;
+  timestamp : nat64;
+  amount : int64;
+};
+type User = record {
+  id : text;
+  photo_url : text;
+  city : text;
+  name : text;
+  is_service : bool;
+};
+service : {
+  assign_tire_to_service : (text, text) -> ();
+  change_tire_owner : (text, text) -> ();
+  create_tire : (text, text, text, text, float32, nat16, text) -> ();
+  create_transaction : (text, int64, text) -> ();
+  create_user : (text, text, text, bool, text) -> ();
+  get_all_tires : () -> (vec Tire) query;
+  get_all_users : () -> (vec User) query;
+  get_transactions_by_user : (text) -> (vec Transaction) query;
+  get_user_by_principal : (text) -> (opt User) query;
+  recycle_tire : (text) -> ();
+  user_exists : (text) -> (bool) query;
+}

@@ -1,0 +1,17 @@
+{
+  "backend": {
+    "ic": "2nulh-wqaaa-aaaan-qzymq-cai"
+  },
+  "dip20": {
+    "ic": "2exa3-ayaaa-aaaan-qzyna-cai"
+  },
+  "frontend": {
+    "ic": "2dwgp-naaaa-aaaan-qzynq-cai"
+  },
+  "nft": {
+    "ic": "2wrxc-miaaa-aaaan-qzyoa-cai"
+  },
+  "storage": {
+    "ic": "2rqrw-bqaaa-aaaan-qzyoq-cai"
+  }
+}
