@@ -6,8 +6,10 @@ import TireDetailModal from "../../components/TireDetailModal";
 import { Eye } from "lucide-react";
 import { AuthClient } from '@dfinity/auth-client';
 import { createActor, canisterId } from 'declarations/backend';
+import { useSiws } from "ic-siws-js/react";
 
 const ProfilePage = () => {
+    const { identity: solanaIdentity } = useSiws();
     const { id } = useParams();
     const navigate = useNavigate();
     const [authClient, setAuthClient] = useState();
@@ -65,13 +67,14 @@ const ProfilePage = () => {
     }
 
     const isCurrentUserProfile = () => {
-        return !id || id === authClient?.getIdentity().getPrincipal().toString();
+        return !id || id === authClient?.getIdentity().getPrincipal().toString()
+         || (!!solanaIdentity && solanaIdentity.getPrincipal().toString() === id);
     };
 
     const getAuthClient = async () => {
         const authClient = await AuthClient.create();
         const identity = authClient.getIdentity();
-        const currentUserId = id || identity.getPrincipal().toString();
+        const currentUserId = id || solanaIdentity?.getPrincipal().toString() || identity.getPrincipal().toString();
         setAuthClient(authClient);
 
         const canisterActor = createActor(canisterId, {
@@ -85,8 +88,9 @@ const ProfilePage = () => {
         const transactions = (await canisterActor.get_transactions_by_user(currentUserId));
         const transactionsSum = transactions
             .reduce((a, b) => a.amount + b.amount, 0);
-        const tires = (await canisterActor.get_all_tires());
+        const tires = (await canisterActor.get_all_tires()).filter(tire => tire.user_id === currentUserId);
 
+        console.log(tires)
         setTires(tires)
         setCurrentUser(currUser);
         setBalance(transactionsSum);
@@ -177,7 +181,7 @@ const ProfilePage = () => {
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 text-sm font-medium mb-1">Account ID</label>
-                                    <p className="text-white font-mono">{id || (authClient && authClient.getIdentity().getPrincipal().toString())}</p>
+                                    <p className="text-white font-mono">{id || solanaIdentity?.getPrincipal().toString() || (authClient && authClient.getIdentity().getPrincipal().toString())}</p>
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 text-sm font-medium mb-1">Balance</label>
@@ -205,7 +209,7 @@ const ProfilePage = () => {
 
                                             <div className="h-48 bg-gray-800 flex items-center justify-center">
                                                 <img
-                                                    src={"https://i.pravatar.cc/150?img=3"}
+                                                    src={tire.image_url}
                                                     alt={`${tire.brand}`}
                                                     className="max-w-full max-h-full object-cover rounded-xl"
                                                 />
@@ -213,7 +217,7 @@ const ProfilePage = () => {
                                             <h4 className="font-semibold text-lg mb-2">
                                                 {tire.brand}
                                             </h4>
-                                            <div className="space-y-1 text-sm">
+                                            <div className="space-y-2 text-sm">
                                                 <p>
                                                     <span className="text-gray-400">Size:</span> {tire.size}
                                                 </p>
@@ -221,6 +225,11 @@ const ProfilePage = () => {
                                                     <span className="text-gray-400">Price:</span>{" "}
                                                     <span className="text-green-400">${tire.price}</span>
                                                 </p>
+                                                {tire.sent_to_recycle && (
+                                                    <p>
+                                                        <span className="text-gray-200 bg-green-600 p-1 rounded-xl ">Sent for recycle</span>
+                                                    </p>
+                                                )}
 
 
                                                 <div className="flex gap-2">

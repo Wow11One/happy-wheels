@@ -47,7 +47,6 @@ function LoginPage() {
     } else {
       navigate(ApplicationRoutes.Profile);
     }
-
   };
   
 
@@ -276,6 +275,42 @@ function LoginPage() {
                       <LogIn size={20} />
                       Login with Internet Identity
                     </button>
+
+                      <div className='mt-4'>
+                        <WalletMultiButton>
+                          <img src='/solana-sol-icon.png' className='w-5 h-5' />
+                          Connect Solana Wallet
+                        </WalletMultiButton>
+                      </div>
+
+                      {wallet.publicKey && (
+                        <button
+                          className='my-5 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium primary-button disabled:cursor-not-allowed'
+                          disabled={loginStatus === 'logging-in'}
+                          onClick={() => {
+                            loginWithSolana()
+                              .then(async (delegetaionIdentity) => {
+                                const authClient = await AuthClient.create();
+                                const canisterActor = createActor(canisterId, {
+                                  agentOptions: {
+                                    authClient,
+                                  },
+                                });
+                                const isUserFirstLoggedIn = !(await canisterActor.user_exists(delegetaionIdentity.getPrincipal().toString()));
+                                if (isUserFirstLoggedIn) {
+                                  navigate(ApplicationRoutes.UserSpecifyInfo);
+                                } else {
+                                  navigate(ApplicationRoutes.Profile);
+                                }
+                              })
+                              .catch((e) => {
+                                toastNotifications.error(e.message || 'unexpected error occurred while signing in with solana')
+                              });
+                          }}
+                        >
+                          {loginStatus === 'logging-in' ? 'Signing in…' : 'Sign in with Solana'}
+                        </button>
+                      )}
                     <div className="mt-8 text-center text-gray-400">
                       <p>Don't have an Internet Identity?</p>
                       <a href="#" className="text-green-400 hover:text-green-300 mt-1 inline-block">

@@ -17,15 +17,15 @@ const AuthLayout = () => {
   const checkAuth = async () => {
     // authorized using icp
     setIsLoading(true);
-    //if (solanaIdentity) {
-    //  setIsAuthenticated(true);
-    //  // authorized using solana wallet
-    //} else {
+    if (solanaIdentity) {
+      setIsAuthenticated(true);
+      // authorized using solana wallet
+    } else {
       const authClient = await AuthClient.create();
       const isAuthenticatedWithID = await authClient.isAuthenticated();
       setIsAuthenticated(isAuthenticatedWithID);
       console.log('isAuthenticatedWithID', isAuthenticatedWithID);
-    //}
+    }
     setIsLoading(false);
     console.log('wallet.publicKey  d', wallet.publicKey);
     console.log('!!(wallet.publicKey && solanaIdentity)', !!(wallet.publicKey && solanaIdentity));

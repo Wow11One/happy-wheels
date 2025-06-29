@@ -1,10 +1,16 @@
 import { useState } from "react"
 import { X, Calendar, Gauge, MapPin, User, Recycle, GemIcon } from "lucide-react"
+import toastNotifications from "../utils/toastNotifications.utils"
+import { AuthClient } from "@dfinity/auth-client"
+import { createActor, canisterId } from 'declarations/backend';
 
 const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
     const [imageError, setImageError] = useState(false)
+    const [geminiResult, setGeminiResult] = useState()
 
     if (!isOpen || !tire) return null
+
+    console.log('tire', tire)
 
     const getConditionColor = (condition) => {
         switch (condition) {
@@ -21,9 +27,26 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
         }
     }
 
+    const sentForRecycle = async () => {
+        const authClient = await AuthClient.create();
+        const identity = authClient.getIdentity();
+        const canisterActor = createActor(canisterId, {
+            agentOptions: {
+                identity,
+            },
+        });
+        await canisterActor.recycle_tire(
+            tire.id
+        );
+        toastNotifications.success('Tire recycled!');
+        setGeminiResult('');
+        onClose();
+    };
+
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget) {
             onClose()
+            setGeminiResult('')
         }
     }
 
@@ -38,6 +61,73 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
             onClose()
         }
     }
+
+    const handleGeminiCheck = async () => {
+        if (!tire.image_url) {
+            toastNotifications.error("No photo URL provided");
+            return;
+        }
+
+        const response = await fetch(tire.image_url);
+        const blob = await response.blob();
+
+        const base64Content = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result?.toString().split(",")[1];
+                if (result) resolve(result);
+                else reject("Failed to convert image to base64.");
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        const payload = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            inline_data: {
+                                mime_type: blob.type || "image/jpeg",
+                                data: base64Content,
+                            },
+                        },
+                        {
+                            text: `
+                            Can you please analyse this tyre with attached image and following parameters:
+                            1. brand - ${tire.brand}
+                            2. treadDepth - ${tire.tread_depth_mm}
+                            3. price - ${tire.price}
+                            4. production year - ${tire.production_year}
+                            5. season - ${tire.season}.
+                            
+                            Give your opinion after the analysis in a couple of sentences with plain text:
+                            should the tire be recycled or it can be sold on marketplace? If image do not look like tire,
+                            then just say it. Do not use markdown and repeat my prompt, just your analysis with plain text
+                            `,
+                        },
+                    ],
+                },
+            ],
+        };
+
+        const res = await fetch(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyC40r_wtGOGCwrP_nef62KTRFsOT3wIE3A",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            }
+        );
+
+        const data = await res.json();
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+            toastNotifications.info("Gemini successfully analysed the tire.");
+            setGeminiResult(data.candidates[0].content.parts[0].text);
+        } else {
+            toastNotifications.error("No answer or something went wrong.");
+        }
+    };
 
     return (
         <div
@@ -63,9 +153,9 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div className="aspect-square bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center">
-                                {tire.image && !imageError ? (
+                                {tire.image_url && !imageError ? (
                                     <img
-                                        src={tire.image || "/placeholder.svg"}
+                                        src={tire.image_url || "/placeholder.svg"}
                                         alt={`${tire.brand} ${tire.model || tire.size}`}
                                         className="w-full h-full object-cover"
                                         onError={() => setImageError(true)}
@@ -87,9 +177,15 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
                                     <div className="text-gray-400 text-sm">Price</div>
                                 </div>
                                 <div className="bg-gray-800 rounded-lg p-4 text-center">
-                                    <div className="text-2xl font-bold text-blue-400">{tire.treadDepth}mm</div>
+                                    <div className="text-2xl font-bold text-blue-400">{tire.tread_depth_mm}mm</div>
                                     <div className="text-gray-400 text-sm">Tread Depth</div>
                                 </div>
+                                {geminiResult && (
+                                    <div className="bg-gray-800 rounded-lg p-4 text-center col-span-2">
+                                        <div className="text-base font-bold text-blue-300">{geminiResult}</div>
+                                        <div className="text-gray-400 text-sm">Gemini analysis result</div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -106,18 +202,18 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
                                         <span className="text-white font-medium">{tire.size}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Condition:</span>
+                                        <span className="text-gray-400">Season:</span>
                                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getConditionColor(tire.condition)}`}>
-                                            {tire.condition}
+                                            {tire.season}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400">Tread Depth:</span>
-                                        <span className="text-white font-medium">{tire.treadDepth}mm</span>
+                                        <span className="text-white font-medium">{tire.tread_depth_mm}mm</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400">Production Year:</span>
-                                        <span className="text-white font-medium">{tire.productionYear || tire.manufactureYear}</span>
+                                        <span className="text-white font-medium">{tire.production_year || tire.manufactureYear}</span>
                                     </div>
                                 </div>
                             </div>
@@ -178,9 +274,10 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
                     )}
                 </div>
 
+
                 <div className="grid grid-cols-2 gap-3 p-6 border-t border-gray-700">
                     <button
-                        onClick={handleEdit}
+                        onClick={handleGeminiCheck}
                         className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                     >
                         <div className="flex items-center gap-3">
@@ -197,7 +294,7 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
                         Delete Listing
                     </button> */}
                     <button
-                        onClick={onClose}
+                        onClick={sentForRecycle}
                     >
                         <div className="flex items-center gap-3 !rounded-lg">
                             <Recycle size={18} />

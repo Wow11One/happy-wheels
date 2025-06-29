@@ -31,6 +31,8 @@ const AddTire = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target
+
+        console.log(name, value)
         setFormData({
             ...formData,
             [name]: value,
@@ -43,11 +45,6 @@ const AddTire = () => {
                 [name]: "",
             })
         }
-
-        // // Handle image URL preview
-        // if (name === "imageUrl" && value) {
-        //     setImagePreview(value)
-        // }
     }
 
     const handleImageChange = (e) => {
@@ -319,21 +316,21 @@ const AddTire = () => {
                                 Season *
                             </label>
                             <select
-                                id="condition"
-                                name="condition"
-                                value={formData.condition}
+                                id="season"
+                                name="season"
+                                value={formData.season}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white focus:outline-none focus:ring-2 transition-colors ${errors.condition ? "border-red-500 focus:ring-red-500" : "border-gray-600 focus:ring-green-500"
+                                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white focus:outline-none focus:ring-2 transition-colors ${errors.season ? "border-red-500 focus:ring-red-500" : "border-gray-600 focus:ring-green-500"
                                     }`}
                             >
                                 <option value="">Select season</option>
-                                {seasonOptions.map((condition) => (
-                                    <option key={condition} value={condition}>
-                                        {condition}
+                                {seasonOptions.map((season) => (
+                                    <option key={season} value={season}>
+                                        {season}
                                     </option>
                                 ))}
                             </select>
-                            {errors.condition && <p className="mt-1 text-red-400 text-sm">{errors.condition}</p>}
+                            {errors.season && <p className="mt-1 text-red-400 text-sm">{errors.season}</p>}
                         </div>
 
                         {/* Form Actions */}

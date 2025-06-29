@@ -1,5 +1,7 @@
+import { AuthClient } from "@dfinity/auth-client"
 import LoadingSpinner from "../../components/TyreLoading/TyreLoading"
 import { useState, useEffect } from "react"
+import { createActor, canisterId } from 'declarations/backend';
 
 const Marketplace = () => {
     const [tires, setTires] = useState([])
@@ -114,10 +116,10 @@ const Marketplace = () => {
         },
     ]
 
-     const fetchServiceProviders = async () => {
+    const getAuthClient = async () => {
+        setLoading(true)
         const authClient = await AuthClient.create();
         const identity = authClient.getIdentity();
-        //setAuthClient(authClient);
 
         const canisterActor = createActor(canisterId, {
             agentOptions: {
@@ -125,22 +127,24 @@ const Marketplace = () => {
             },
         });
 
-        const providers = await canisterActor.get_all_users();
+        const tires = (await canisterActor.get_all_tires()).filter(tire => !tire.sent_to_recycle);
 
-        setProviders(providers.filter(provider => provider.is_service))
-        setFilteredProviders(providers.filter(provider => provider.is_service))
+        console.log('TIRES', tires)
+
+        setTires(tires)
+        setFilteredTires(tires)
         setLoading(false)
     };
 
     useEffect(() => {
-        fetchServiceProviders();
-    }, [])
+        getAuthClient();
+    }, []);
 
     useEffect(() => {
         setTimeout(() => {
-            setTires(mockTires)
-            setFilteredTires(mockTires)
-            setLoading(false)
+           // setTires(mockTires)
+           // setFilteredTires(mockTires)
+           // setLoading(false)
         }, 1500)
     }, [])
 
@@ -345,28 +349,19 @@ const Marketplace = () => {
                                             <p className="text-gray-300 text-sm mb-4 line-clamp-2">{tire.description}</p>
 
                                             <div className="space-y-2 mb-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-400">Condition:</span>
-                                                    <span
-                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionColor(tire.condition)}`}
-                                                    >
-                                                        {tire.condition}
-                                                    </span>
-                                                </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-400">Tread Depth:</span>
-                                                    <span className="text-white">{tire.treadDepth}</span>
+                                                    <span className="text-white">{tire.tread_depth_mm}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-400">Year:</span>
-                                                    <span className="text-white">{tire.manufactureYear}</span>
+                                                    <span className="text-white">{tire.production_year}</span>
                                                 </div>
                                             </div>
 
                                             <div className="border-t border-gray-700 pt-4 mb-4">
                                                 <div className="flex items-center justify-between mb-1">
                                                     <div className="flex items-center space-x-2">
-                                                        <span className="text-white font-medium">{tire.seller}</span>
                                                         {tire.isServiceProvider && (
                                                             <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
                                                                 Service Provider

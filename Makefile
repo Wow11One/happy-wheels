@@ -9,15 +9,33 @@ deploy-provider:
 	        salt = \"salt\"; \
           	chain_id = opt \"devnet\"; \
 	        scheme = opt \"http\"; \
-	        statement = opt \"Login to the Proof of recycling app\"; \
+	        statement = opt \"Login to the Happy wheels app\"; \
 	        sign_in_expires_in = opt 900000000000; /* 5 minutes */ \
 	        session_expires_in = opt 604800000000000; /* 1 week */ \
 	        targets = opt vec { \
 	            \"$$(dfx canister id ic_siws_provider)\"; \
 				\"$$(dfx canister id backend)\"; \
-				\"$$(dfx canister id dip20)\"; \
-				\"$$(dfx canister id nft)\"; \
-				\"$$(dfx canister id storage)\"; \
+	        }; \
+          runtime_features = null; \
+	    } \
+	)"
+	dfx generate ic_siws_provider
+
+
+deploy-provider-mainnet:
+	dfx deploy ic_siws_provider --network ic --argument "( \
+	    record { \
+			domain = \"ue6ep-wiaaa-aaaaf-qat2q-cai.icp0.io\"; \
+	        uri = \"https://ue6ep-wiaaa-aaaaf-qat2q-cai.icp0.io\"; \
+	        salt = \"salt\"; \
+          	chain_id = opt \"devnet\"; \
+	        scheme = opt \"https\"; \
+	        statement = opt \"Login to the Happy wheels app\"; \
+	        sign_in_expires_in = opt 900000000000; /* 5 minutes */ \
+	        session_expires_in = opt 604800000000000; /* 1 week */ \
+	        targets = opt vec { \
+	            \"$$(dfx canister id ic_siws_provider --network ic)\"; \
+				\"$$(dfx canister id backend --network ic)\"; \
 	        }; \
           runtime_features = null; \
 	    } \
@@ -36,7 +54,7 @@ deploy-provider-localnet:
 	        sign_in_expires_in = opt 900000000000; /* 5 minutes */ \
 	        session_expires_in = opt 604800000000000; /* 1 week */ \
 	        targets = opt vec { \
-	            \"$$(dfx canister id ic_siws_provider)\"; \
+	            \"$$(dfx canister id backend)\"; \
 	        }; \
           runtime_features = null; \
 	    } \
