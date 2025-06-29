@@ -1,43 +1,36 @@
-# Proof of recycling
+# Happy wheels
 
-![PoR](https://res.cloudinary.com/dbkgbcqcf/image/upload/v1743410699/PoR_lglivd.png)
+This project is a decentralised marketplace for the secondary tyre market, built on the Internet Computer Protocol (ICP). It leverages artificial intelligence to automatically assess the condition of used tyres through image analysis. This enables users to determine whether a tyre is still suitable for resale or should be sent for recycling.
 
-The project aims to promote environmental responsibility among Ukrainian citizens through the use of Solana blockchain technology.
+The platform enhances user experience with smart features such as automatic geolocation, which helps identify nearby tyre service stations and recycling points. By combining blockchain technology with AI, the solution ensures transparency, trust, and sustainability in the used tyre ecosystem.
 
 This example application is written in Rust, TypeScript (React).
 
 ## Project structure
 
  - The `backend` folder contains the Rust smart contract, used mostly for authentication purposes.
- - The `dip20` folder contains the Rust smart contract, used for DIP20 token logic (currency for bonuses).
- - The `nft` folder contains the Rust smart contract, used for DIP20 toke logic (bonuses).
- - The `storage` folder contains the Rust smart contract, built to store recycling records of users.
  - The `frontend` folder contains web assets for the application's user interface. The user interface is written using the React framework.
 
-## Description
+## Expected Results:
 
-The project aims to promote environmental responsibility among Ukrainian citizens through the use of Solana blockchain technology.
+1. Improved Tyre Reuse and Recycling Decisions
+Users will be able to accurately determine the condition of used tyres using AI-powered image analysis, helping them decide whether to sell or recycle each tyre responsibly.
 
-Anyone who brings waste to the "Ukraine Without Waste" station receives tokens, which can be used to purchase NFTs that grant discounts at partner store chains as a reward for their contribution to recycling.
+2. Increased Accessibility to Tyre Services
+Through automated geolocation, users will easily find the nearest tyre service stations or recycling centres, promoting local reuse and proper disposal.
 
-## How It Works
+3. Transparent and Trustworthy Marketplace
+Leveraging ICP’s decentralised infrastructure, all listings, transactions, and tyre evaluations will be securely stored on-chain, reducing fraud and improving trust between buyers and sellers.
 
-1. A person arrives at the "Ukraine Without Waste" station with recyclable waste.
-2. They take a photo of themselves in front of the station's sign along with the waste they brought.
-3. They upload the photo to a mobile app or web platform powered by ICP.
-4. They receive 1,000 SPL20 tokens in their balance.
-5. On the project's partner offers page, users can purchase three types of NFTs, which grant discounts at partner stores.
+4. Enhanced User Engagement and Circular Economy Adoption
+By simplifying the selling and recycling process, the platform is expected to increase user participation in the circular economy, reducing waste and environmental impact.
 
-## Expected Results
+5. Scalable Architecture for Future Growth
+The use of ICP canisters ensures scalability and low-latency interactions, enabling the platform to handle large volumes of users and data as adoption grows.
 
- - An increase in the number of people who sort and recycle waste.
- - The development of a culture of environmental responsibility.
- - The promotion of blockchain and Web3 technology in social initiatives.
- - The creation of a sustainable incentive mechanism for recycling.
+Data-Driven Insights for Policy and Industry
+Aggregated tyre condition and location data can be used to support sustainability initiatives, optimise recycling logistics, and inform public or private sector decisions.
 
 ## Links
 
- - [Presentation link](https://docs.google.com/presentation/d/1HwgGLAqxJhjB4TFSljMQF67l3jtmz99O/edit?slide=id.p1#slide=id.p1)
- - [Demo on Youtube](https://www.youtube.com/watch?v=RbnHCaMm_x8)
- - [Deployed project on ICP](https://2dwgp-naaaa-aaaan-qzynq-cai.icp0.io/)
- - [Repository with smart-contracts](https://github.com/Wow11One/por-solana-smart-contracts)
+ - [Deployed project on ICP](https://ue6ep-wiaaa-aaaaf-qat2q-cai.icp0.io/)
