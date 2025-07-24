@@ -43,65 +43,17 @@ const App: FC = () => {
                 />
               }
             >
-              <Route
-                path={ApplicationRoutes.LoginPage}
-                element={
-                  <LoginPage
+              <Route path={ApplicationRoutes.LoginPage} element={<LoginPage />} />
 
-                  />
-                }
-              />
+              <Route element={<AuthLayout />}>
+                <Route index path={ApplicationRoutes.Profile} element={<ProfilePage />} />
+                <Route index path={`${ApplicationRoutes.Profile}/:id`} element={<ProfilePage />} />
+                <Route path='/' element={<Navigate to={ApplicationRoutes.Profile} />} />
 
-              <Route
-                element={
-                  <AuthLayout />
-                }
-              >
-                <Route
-                  index
-                  path={ApplicationRoutes.Profile}
-                  element={
-                    <ProfilePage />
-                  }
-                />
-                <Route
-                  index
-                  path={`${ApplicationRoutes.Profile}/:id`}
-                  element={
-                    <ProfilePage />
-                  }
-                />
-                <Route
-                  path='/'
-                  element={
-                    <Navigate to={ApplicationRoutes.Profile} />
-                  }
-                />
-
-                <Route
-                  path={ApplicationRoutes.Marketplace}
-                  element={
-                    <Marketplace />
-                  }
-                />
-                <Route
-                  path={ApplicationRoutes.Services}
-                  element={
-                    <ServiceProviders />
-                  }
-                />
-                <Route
-                  path={ApplicationRoutes.UserSpecifyInfo}
-                  element={
-                    <UserInfoForm />
-                  }
-                />
-                <Route
-                  path={ApplicationRoutes.TyreCreateForm}
-                  element={
-                    <CreateTirePage />
-                  }
-                />
+                <Route path={ApplicationRoutes.Marketplace} element={<Marketplace />} />
+                <Route path={ApplicationRoutes.Services} element={<ServiceProviders />} />
+                <Route path={ApplicationRoutes.UserSpecifyInfo} element={<UserInfoForm />} />
+                <Route path={ApplicationRoutes.TyreCreateForm} element={<CreateTirePage />} />
               </Route>
             </Route>
           </Routes>

@@ -13,7 +13,6 @@ import Web3AuthContext from '../contexts/Web3AuthContext';
 import { createPortal } from 'react-dom';
 import Modal from '../components/Modal';
 
-
 export interface Web3AuthProviderProps {
   children: ReactNode;
 }
@@ -34,7 +33,7 @@ const Web3AuthProvider: FC<Web3AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState(initialState);
   const network = WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  console.log('SolflareWalletAdapter')
+  console.log('SolflareWalletAdapter');
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),

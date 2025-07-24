@@ -5,7 +5,6 @@ import { ApplicationRoutes } from './utils/constants';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useSiws } from 'ic-siws-js/react';
 
-
 const InternetIdentity = ({
   setActor,
   isAuthenticated,
@@ -35,7 +34,8 @@ const InternetIdentity = ({
     });
     const isAuthenticated = await authClient.isAuthenticated();
 
-    setActor(actor);console.log('await authClient.isAuthenticated()', await authClient.isAuthenticated())
+    setActor(actor);
+    console.log('await authClient.isAuthenticated()', await authClient.isAuthenticated());
     setAuthClient(authClient);
     setIsAuthenticated(isAuthenticated);
     setPrincipal(identity.getPrincipal().toString());
@@ -55,19 +55,11 @@ const InternetIdentity = ({
       {isAuthenticated || solanaIdentity ? (
         <>
           <p className='text-sm'>{/* <span className="font-mono">{principal}</span> */}</p>
-          <button
-            onClick={logout}
-          >
-            Sign Out
-          </button>
+          <button onClick={logout}>Sign Out</button>
         </>
       ) : (
         <>
-          <button
-            onClick={() => navigate(ApplicationRoutes.LoginPage)}
-          >
-            Sign In
-          </button>
+          <button onClick={() => navigate(ApplicationRoutes.LoginPage)}>Sign In</button>
         </>
       )}
     </div>

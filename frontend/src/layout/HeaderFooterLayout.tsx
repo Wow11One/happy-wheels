@@ -32,7 +32,6 @@ const HeaderFooterLayout = ({
         setAuthClient={setAuthClient}
       />
       <Outlet />
-      {/* <Footer /> */}
     </>
   );
 };

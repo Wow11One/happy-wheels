@@ -3,7 +3,7 @@ import { ApplicationRoutes } from '../utils/constants';
 import { useAuth } from '../hooks/auth.hooks';
 import { AuthClient } from '@dfinity/auth-client';
 import { useEffect, useState } from 'react';
-import { useSiws } from "ic-siws-js/react";
+import { useSiws } from 'ic-siws-js/react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import LoadingSpinner from '../components/TyreLoading/TyreLoading';
 
@@ -31,11 +31,12 @@ const AuthLayout = () => {
     console.log('!!(wallet.publicKey && solanaIdentity)', !!(wallet.publicKey && solanaIdentity));
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, [
-    //solanaIdentity
-  ]);
+  useEffect(
+    () => {
+      checkAuth();
+    },
+    [],
+  );
 
   if (isLoading) {
     return (
@@ -48,7 +49,6 @@ const AuthLayout = () => {
   if (!isLoading && !isAuthenticated) {
     return <Navigate to={ApplicationRoutes.LoginPage} />;
   }
-
 
   return <Outlet />;
 };

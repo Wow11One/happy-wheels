@@ -9,13 +9,13 @@ const PINATA_API_KEY = '70a46fc6f97845278456';
 const PINATA_SECRET_API_KEY = '7261220db36cf663ec44946898dbd99d5f5c5b0556bfe28521d83c9f182ab2ff';
 
 export const uploadFileToPinata = async (file: File): Promise<string> => {
-  if (!file) throw new Error("No file provided");
+  if (!file) throw new Error('No file provided');
 
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append('file', file);
 
-  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-    method: "POST",
+  const res = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+    method: 'POST',
     headers: {
       pinata_api_key: PINATA_API_KEY,
       pinata_secret_api_key: PINATA_SECRET_API_KEY,
@@ -33,9 +33,9 @@ export const uploadFileToPinata = async (file: File): Promise<string> => {
 
 export const uploadJsonToPinata = async (metadata: Metadata): Promise<string> => {
   const res = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       pinata_api_key: PINATA_API_KEY,
       pinata_secret_api_key: PINATA_SECRET_API_KEY!,
     },
@@ -51,4 +51,3 @@ export const uploadJsonToPinata = async (metadata: Metadata): Promise<string> =>
 };
 
 export const getFileUrl = (fileCID: string) => `https://gateway.pinata.cloud/ipfs/${fileCID}`;
-

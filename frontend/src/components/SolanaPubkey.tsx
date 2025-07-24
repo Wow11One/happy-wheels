@@ -1,4 +1,4 @@
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function SolanaPubkey() {
   const { publicKey } = useWallet();
@@ -7,8 +7,7 @@ export default function SolanaPubkey() {
     return null;
   }
 
-  const formattedPubkey =
-    publicKey.toString().slice(0, 4) + "..." + publicKey.toString().slice(-4);
+  const formattedPubkey = publicKey.toString().slice(0, 4) + '...' + publicKey.toString().slice(-4);
 
   return <div>{formattedPubkey}</div>;
 }

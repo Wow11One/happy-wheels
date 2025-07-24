@@ -164,7 +164,7 @@ const WheelComponent = ({
     ctx.beginPath();
     ctx.arc(centerX, centerY, 40, 0, PI2, false);
     ctx.closePath();
-    ctx.fillStyle  = '#DCFCE7';
+    ctx.fillStyle = '#DCFCE7';
     ctx.lineWidth = 5;
     ctx.strokeStyle = contrastColor || 'white';
     ctx.fill();
