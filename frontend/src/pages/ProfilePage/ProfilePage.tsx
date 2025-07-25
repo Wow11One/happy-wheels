@@ -4,105 +4,55 @@ import { useEffect, useState } from 'react';
 import { ApplicationRoutes } from '../../utils/constants';
 import TireDetailModal from '../../components/TireDetailModal';
 import { CreditCard, Eye } from 'lucide-react';
-import { AuthClient } from '@dfinity/auth-client';
-import { createActor, canisterId } from 'declarations/backend';
+import { useAuth } from '../../hooks/auth.hooks';
+import { AuthenticatedUser } from '../../storage/auth/auth.types';
 
 const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [authClient, setAuthClient] = useState();
-  const [currentUser, setCurrentUser] = useState();
-  const [balance, setBalance] = useState();
-  const [transactions, setTransactions] = useState();
-  const [tires, setTires] = useState();
+  const [balance, setBalance] = useState(0n);
 
-  const user = {
-    name: 'John Doe',
-    isServiceProvider: true,
-    id: 'user-abc123',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=3',
-    tires: [
-      {
-        brand: 'Michelin',
-        model: 'Primacy 4',
-        size: '205/55 R16',
-        price: 120,
-        condition: 'New',
-      },
-      {
-        brand: 'Goodyear',
-        model: 'Eagle F1',
-        size: '225/45 R17',
-        price: 95,
-        condition: 'Used - Good',
-      },
-    ],
-    transactions: [
-      {
-        date: '2025-05-20',
-        type: 'Purchase',
-        item: 'Michelin Primacy 4',
-        amount: 120,
-        status: 'Completed',
-      },
-      {
-        date: '2025-05-22',
-        type: 'Sale',
-        item: 'Goodyear Eagle F1',
-        amount: 95,
-        status: 'Pending',
-      },
-    ],
-  };
+  const { authUser, isFetchingAuthentication } = useAuth<AuthenticatedUser>();
+
+  const mockTransactions = [
+    {
+      date: '2025-05-20',
+      type: 'Purchase',
+      item: 'Michelin Primacy 4',
+      amount: 120,
+      status: 'Completed',
+    },
+    {
+      date: '2025-05-22',
+      type: 'Sale',
+      item: 'Goodyear Eagle F1',
+      amount: 95,
+      status: 'Pending',
+    },
+  ];
 
   const [activeTab, setActiveTab] = useState('profile');
   const [selectedTire, setSelectedTire] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleTireClick = tire => {
+  const handleTireClick = (tire: any) => {
     setSelectedTire(tire);
     setIsModalOpen(true);
   };
 
   const isCurrentUserProfile = () => {
-    return !id || id === authClient?.getIdentity().getPrincipal().toString();
-  };
-
-  const getAuthClient = async () => {
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
-    const currentUserId = id || identity.getPrincipal().toString();
-    setAuthClient(authClient);
-
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-
-    const currUser = (await canisterActor.get_user_by_principal(currentUserId))[0];
-    console.log(
-      'await canisterActor.get_user_by_principal(identity.getPrincipal().toString()',
-      currUser,
-    );
-    const transactions = await canisterActor.get_transactions_by_user(currentUserId);
-    const transactionsSum = transactions.reduce((a, b) => a.amount + b.amount, 0);
-    const tires = (await canisterActor.get_all_tires()).filter(
-      tire => tire.user_id === currentUserId,
-    );
-
-    console.log(tires);
-    setTires(tires);
-    setCurrentUser(currUser);
-    setBalance(transactionsSum);
-    setTransactions(transactions);
+    return !id || (authUser.isAuthenticated && id === authUser.principal.toString());
   };
 
   useEffect(() => {
-    getAuthClient();
-  }, []);
+    if (authUser.isAuthenticated) {
+      const balance = authUser.transactions.reduce((a, b) => a + b.amount, 0n);
 
-  if (!user) {
+      setBalance(balance);
+    }
+  }, [authUser]);
+
+  if (isFetchingAuthentication) {
     return (
       <div className='loading-container'>
         <LoadingSpinner />
@@ -116,7 +66,7 @@ const ProfilePage = () => {
         <div className='card !bg-gray-900'>
           <div className='flex items-center mb-4'>
             <img
-              src={currentUser?.photo_url || '/default-avatar.png'}
+              src={authUser.profile.photo_url || '/default-avatar.png'}
               alt='Profile'
               style={{
                 width: '80px',
@@ -127,8 +77,8 @@ const ProfilePage = () => {
               }}
             />
             <div>
-              <h2>{currentUser?.name}</h2>
-              <p>{currentUser?.is_service ? 'Service Provider' : 'Customer'}</p>
+              <h2>{authUser.profile.name}</h2>
+              <p>{authUser.profile.is_service ? 'Service Provider' : 'Customer'}</p>
             </div>
           </div>
         </div>
@@ -173,31 +123,33 @@ const ProfilePage = () => {
               <div className='space-y-4'>
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Name</label>
-                  <p className='text-white font-mono'>{currentUser?.name}</p>
+                  <p className='text-white font-mono'>{authUser.profile.name}</p>
                 </div>
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>
                     Account Type
                   </label>
                   <p className='text-white font-mono'>
-                    {currentUser?.is_service ? 'Service Provider' : 'Customer'}
+                    {authUser.profile.is_service ? 'Service Provider' : 'Customer'}
                   </p>
                 </div>
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Account ID</label>
                   <p className='text-white font-mono'>
-                    {id || (authClient && authClient.getIdentity().getPrincipal().toString())}
+                    {id ||
+                      (authUser.authClient &&
+                        authUser.authClient.getIdentity().getPrincipal().toString())}
                   </p>
                 </div>
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Balance</label>
-                  <p className='text-white font-mono'>{balance || 0}$</p>
+                  <p className='text-white font-mono'>{Number(balance || 0n)}$</p>
                 </div>
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Actions</label>
                   <div className='flex gap-4'>
                     <button>I love ICP</button>
-                    {!isCurrentUserProfile() && !!currentUser?.is_service && (
+                    {!isCurrentUserProfile() && !!authUser.profile.is_service && (
                       <button>Give tires</button>
                     )}
                     {isCurrentUserProfile() && (
@@ -214,9 +166,9 @@ const ProfilePage = () => {
           {activeTab === 'tires' && (
             <div>
               <h3 className='text-xl font-semibold mb-6'>Tires</h3>
-              {tires && tires.length > 0 ? (
+              {authUser.tires && authUser.tires.length > 0 ? (
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                  {tires.map((tire, index) => (
+                  {authUser.tires.map((tire, index) => (
                     <div
                       key={index}
                       className='flex flex-col flex-1 bg-gray-800 rounded-lg p-4 gap-2'
@@ -283,7 +235,7 @@ const ProfilePage = () => {
           {activeTab === 'transactions' && (
             <div>
               <h3 className='text-xl font-semibold mb-6'>Transaction History</h3>
-              {transactions && transactions.length > 0 ? (
+              {authUser.transactions && authUser.transactions.length > 0 ? (
                 <div className='overflow-x-auto'>
                   <table className='w-full'>
                     <thead>
@@ -296,17 +248,19 @@ const ProfilePage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {user.transactions.map((transaction, index) => (
+                      {mockTransactions.map((transaction, index) => (
                         <tr key={index} className='border-b border-gray-800'>
-                          <td className='py-3 px-4'>{transaction?.date}</td>
-                          <td className='py-3 px-4'>{transaction?.type}</td>
-                          <td className='py-3 px-4'>{transaction?.item}</td>
+                          <td className='py-3 px-4'>
+                            {new Date(Number(transaction.date)).toLocaleDateString('en-US')}
+                          </td>
+                          <td className='py-3 px-4'>{transaction.type}</td>
+                          <td className='py-3 px-4'>{transaction.item}</td>
                           <td
                             className={`py-3 px-4 ${transaction?.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}
                           >
-                            ${transaction.amount}
+                            ${transaction.amount.toString()}
                           </td>
-                          <td className='py-3 px-4'>{transaction?.status}</td>
+                          <td className='py-3 px-4'>{transaction.status}</td>
                         </tr>
                       ))}
                     </tbody>

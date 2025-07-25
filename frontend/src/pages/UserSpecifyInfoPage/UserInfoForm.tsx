@@ -2,14 +2,16 @@ import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toastNotifications from '../../utils/toastNotifications.utils';
-import { createActor, canisterId } from 'declarations/backend';
 import { ApplicationRoutes } from '../../utils/constants';
-import { AuthClient } from '@dfinity/auth-client';
 import { getFileUrl, uploadFileToPinata } from '../../utils/pinata.utils';
+import { useUser } from '../../hooks/user.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 
 const UserInfoForm = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { createUser } = useUser();
+  const { fetchAuthUser } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     isServiceProvider: false,
@@ -17,6 +19,7 @@ const UserInfoForm = () => {
     imagePreview: null,
     city: '',
   });
+
   const [error, setError] = useState('');
 
   const getUserLocation = () => {
@@ -115,14 +118,6 @@ const UserInfoForm = () => {
         transactions: [], // Initialize empty transactions list
       };
 
-      const authClient = await AuthClient.create();
-      const identity = authClient.getIdentity();
-      const canisterActor = createActor(canisterId, {
-        agentOptions: {
-          authClient,
-        },
-      });
-
       let imageUrl = '';
       if (formData.profileImage) {
         const uriIc = await uploadFileToPinata(formData.profileImage);
@@ -130,14 +125,13 @@ const UserInfoForm = () => {
         imageUrl = getFileUrl(uriIc);
       }
 
-      console.log('identity.getPrincipal().toString()', identity.getPrincipal().toString());
-      await canisterActor.create_user(
-        identity.getPrincipal().toString(),
-        formData.name,
+      await createUser({
+        name: formData.name,
         imageUrl,
-        formData.isServiceProvider,
-        formData.city,
-      );
+        isServiceProvider: formData.isServiceProvider,
+        city: formData.city,
+      });
+      await fetchAuthUser();
 
       navigate(ApplicationRoutes.Profile);
     } catch (error) {
