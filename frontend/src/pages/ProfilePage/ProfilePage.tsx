@@ -3,7 +3,7 @@ import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import { useEffect, useState } from 'react';
 import { ApplicationRoutes } from '../../utils/constants';
 import TireDetailModal from '../../components/TireDetailModal';
-import { Eye } from 'lucide-react';
+import { CreditCard, Eye } from 'lucide-react';
 import { AuthClient } from '@dfinity/auth-client';
 import { createActor, canisterId } from 'declarations/backend';
 
@@ -65,10 +65,7 @@ const ProfilePage = () => {
   };
 
   const isCurrentUserProfile = () => {
-    return (
-      !id ||
-      id === authClient?.getIdentity().getPrincipal().toString()
-    );
+    return !id || id === authClient?.getIdentity().getPrincipal().toString();
   };
 
   const getAuthClient = async () => {
@@ -220,40 +217,53 @@ const ProfilePage = () => {
               {tires && tires.length > 0 ? (
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                   {tires.map((tire, index) => (
-                    <div key={index} className='bg-gray-800 rounded-lg p-4'>
-                      <div className='h-48 bg-gray-800 flex items-center justify-center'>
-                        <img
-                          src={tire.image_url}
-                          alt={`${tire.brand}`}
-                          className='max-w-full max-h-full object-cover rounded-xl'
-                        />
-                      </div>
-                      <h4 className='font-semibold text-lg mb-2'>{tire.brand}</h4>
-                      <div className='space-y-2 text-sm'>
-                        <p>
-                          <span className='text-gray-400'>Size:</span> {tire.size}
-                        </p>
-                        <p>
-                          <span className='text-gray-400'>Price:</span>{' '}
-                          <span className='text-green-400'>${tire.price}</span>
-                        </p>
-                        {tire.sent_to_recycle && (
+                    <div
+                      key={index}
+                      className='flex flex-col flex-1 bg-gray-800 rounded-lg p-4 gap-2'
+                    >
+                      <div className='flex flex-col flex-1'>
+                        <div className='h-48 bg-gray-800 flex items-center justify-center'>
+                          <img
+                            src={tire.image_url}
+                            alt={`${tire.brand}`}
+                            className='max-w-full max-h-full object-cover rounded-xl'
+                          />
+                        </div>
+                        <h4 className='font-semibold text-lg mb-2'>{tire.brand}</h4>
+                        <div className='space-y-2 text-sm'>
                           <p>
-                            <span className='text-gray-200 bg-green-600 p-1 rounded-xl '>
-                              Sent for recycle
-                            </span>
+                            <span className='text-gray-400'>Size:</span> {tire.size}
                           </p>
-                        )}
-
-                        <div className='flex gap-2'>
+                          <p>
+                            <span className='text-gray-400'>Price:</span>{' '}
+                            <span className='text-green-400'>${tire.price}</span>
+                          </p>
+                          {tire.sent_to_recycle && (
+                            <p>
+                              <span className='text-gray-200 bg-green-600 p-1 rounded-xl '>
+                                Sent for recycle
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className='flex flex-col gap-2'>
+                        <button
+                          onClick={() => handleTireClick(tire)}
+                          className='flex-1  text-white py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-1'
+                        >
+                          <Eye size={14} />
+                          View
+                        </button>
+                        {!tire.sent_to_recycle && (
                           <button
-                            onClick={() => handleTireClick(tire)}
+                            // onClick={() => handleTireClick(tire)}
                             className='flex-1  text-white py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-1'
                           >
-                            <Eye size={14} />
-                            View
+                            <CreditCard size={14} />
+                            Buy
                           </button>
-                        </div>
+                        )}
                       </div>
                     </div>
                   ))}

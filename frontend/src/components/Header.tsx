@@ -1,18 +1,10 @@
-import { useState } from 'react';
+import { FC, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { ApplicationRoutes } from '../utils/constants';
 import InternetIdentity from '.././InternetIdentity';
 
-const Header = ({
-  actor,
-  setActor,
-  isAuthenticated = false,
-  setIsAuthenticated,
-  setIsFetchingAuthentication,
-  authClient,
-  setAuthClient,
-}) => {
+const Header: FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -23,9 +15,17 @@ const Header = ({
     { href: ApplicationRoutes.TyreCreateForm, label: 'Register tyre' },
   ];
 
-  const isActiveLink = href => location.pathname === href;
+  const isActiveLink = (href: string) => location.pathname === href;
 
-  const NavLinkComponent = ({ href, label, mobile = false }) => {
+  const NavLinkComponent = ({
+    href,
+    label,
+    mobile = false,
+  }: {
+    href: string;
+    label: string;
+    mobile?: boolean;
+  }) => {
     const isActive = isActiveLink(href);
     const baseClasses = mobile
       ? 'block px-3 py-2 text-base font-medium transition-colors duration-300'
@@ -97,14 +97,7 @@ const Header = ({
         <div className='flex items-center gap-4'>
           {/* Desktop Auth */}
           <div className='hidden sm:block'>
-            <InternetIdentity
-              setActor={setActor}
-              isAuthenticated={isAuthenticated}
-              setIsAuthenticated={setIsAuthenticated}
-              setIsFetchingAuthentication={setIsFetchingAuthentication}
-              setAuthClient={setAuthClient}
-              authClient={authClient}
-            />
+            <InternetIdentity />
           </div>
 
           {/* Mobile Menu Button */}
@@ -128,14 +121,7 @@ const Header = ({
 
             {/* Mobile Auth */}
             <div className='px-3 py-2 border-t border-gray-800 mt-4 pt-4'>
-              <InternetIdentity
-                setActor={setActor}
-                isAuthenticated={isAuthenticated}
-                setIsAuthenticated={setIsAuthenticated}
-                setIsFetchingAuthentication={setIsFetchingAuthentication}
-                setAuthClient={setAuthClient}
-                authClient={authClient}
-              />
+              <InternetIdentity />
             </div>
           </div>
         </div>

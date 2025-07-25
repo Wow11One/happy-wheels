@@ -1,54 +1,24 @@
-import { useEffect, useState } from 'react';
-import { AuthClient } from '@dfinity/auth-client';
-import { createActor, canisterId } from 'declarations/backend';
+import { FC, useEffect, useState } from 'react';
 import { ApplicationRoutes } from './utils/constants';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './hooks/auth.hooks';
 
-const InternetIdentity = ({
-  setActor,
-  isAuthenticated,
-  setIsAuthenticated,
-  setIsFetchingAuthentication,
-  authClient,
-  setAuthClient,
-}) => {
-  const [principal, setPrincipal] = useState();
-
+const InternetIdentity: FC = () => {
+  const { authUser, logout, fetchAuthUser } = useAuth();
+  const [isComponentRendered, setIsComponentRendered] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    updateActor();
-  }, []);
+    if (!isComponentRendered) {
+      return setIsComponentRendered(true);
+    }
 
-  async function updateActor() {
-    setIsFetchingAuthentication(true);
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
-    const actor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-    const isAuthenticated = await authClient.isAuthenticated();
-
-    setActor(actor);
-    console.log('await authClient.isAuthenticated()', await authClient.isAuthenticated());
-    setAuthClient(authClient);
-    setIsAuthenticated(isAuthenticated);
-    setPrincipal(identity.getPrincipal().toString());
-    setIsFetchingAuthentication(false);
-  }
-
-  async function logout() {
-    const authClient = await AuthClient.create();
-    await authClient.logout();
-    setIsAuthenticated(false);
-    navigate(ApplicationRoutes.LoginPage);
-  }
+    fetchAuthUser();
+  }, [isComponentRendered, fetchAuthUser]);
 
   return (
     <div className='flex items-center space-x-4'>
-      {isAuthenticated ? (
+      {authUser.isAuthenticated ? (
         <>
           <p className='text-sm'>{/* <span className="font-mono">{principal}</span> */}</p>
           <button onClick={logout}>Sign Out</button>

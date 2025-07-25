@@ -1,28 +1,29 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { ApplicationRoutes } from '../utils/constants';
-import { AuthClient } from '@dfinity/auth-client';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from '../components/TyreLoading/TyreLoading';
+import { useAuth } from '../hooks/auth.hooks';
 
 const AuthLayout = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isComponentRendered, setIsComponentRendered] = useState(false);
+  const { authUser, fetchAuthUser } = useAuth();
 
   const checkAuth = async () => {
-    // authorized using icp
     setIsLoading(true);
-    const authClient = await AuthClient.create();
-    const isAuthenticatedWithID = await authClient.isAuthenticated();
-    setIsAuthenticated(isAuthenticatedWithID);
+
+    await fetchAuthUser();
+
     setIsLoading(false);
   };
 
-  useEffect(
-    () => {
-      checkAuth();
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!isComponentRendered) {
+      return setIsComponentRendered(true);
+    }
+
+    checkAuth().catch(console.error);
+  }, [isComponentRendered, fetchAuthUser]);
 
   if (isLoading) {
     return (
@@ -32,7 +33,7 @@ const AuthLayout = () => {
     );
   }
 
-  if (!isLoading && !isAuthenticated) {
+  if (!isLoading && !authUser.isAuthenticated) {
     return <Navigate to={ApplicationRoutes.LoginPage} />;
   }
 
