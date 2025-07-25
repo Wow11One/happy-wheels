@@ -6,5 +6,6 @@ export interface CreateUserDto {
 }
 
 export interface UserStorageErrors {
+  fetchAllUsers: string | null;
   create: string | null;
 }

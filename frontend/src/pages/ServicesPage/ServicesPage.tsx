@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import toastNotifications from '../../utils/toastNotifications.utils';
-import { createActor, canisterId } from 'declarations/backend';
-import { AuthClient } from '@dfinity/auth-client';
 import { useNavigate } from 'react-router-dom';
 import { ApplicationRoutes } from '../../utils/constants';
+import { useUser } from '../../hooks/user.hooks';
+import { User } from '../../../../src/declarations/backend/backend.did';
 
 const ServiceProviders = () => {
   const navigate = useNavigate();
-  const [providers, setProviders] = useState([]);
-  const [filteredProviders, setFilteredProviders] = useState([]);
+  const [providers, setProviders] = useState<User[]>([]);
+  const [filteredProviders, setFilteredProviders] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     location: '',
@@ -17,18 +17,10 @@ const ServiceProviders = () => {
     rating: '',
   });
 
+  const { fetchAllUsers } = useUser();
+
   const fetchServiceProviders = async () => {
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
-    //setAuthClient(authClient);
-
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-
-    const providers = await canisterActor.get_all_users();
+    const providers = await fetchAllUsers();
 
     setProviders(providers.filter(provider => provider.is_service));
     setFilteredProviders(providers.filter(provider => provider.is_service));
