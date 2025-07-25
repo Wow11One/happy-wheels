@@ -27,7 +27,7 @@ const UserInfoForm = () => {
     }
   };
 
-  const geolocationSuccess = position => {
+  const geolocationSuccess = (position: any) => {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
     getCityAndCountry(latitude, longitude);
@@ -37,28 +37,35 @@ const UserInfoForm = () => {
     alert('Unable to retrieve your location.');
   };
 
-  const getCityAndCountry = (lat, lon) => {
-    const apiKey = '8739517405194a86adfc82e0c169c068';
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${apiKey}&language=en`;
+  const getCityAndCountry = async (lat: number, lon: number) => {
+    const authClient = await AuthClient.create();
+    const identity = authClient.getIdentity();
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.results.length > 0) {
-          const location = data.results[0].components;
-          const city = location.city || location.town || location.village;
-          const country = location.country;
-          console.log(`City: ${city}, Country: ${country}`);
-          setFormData({
-            ...formData,
-            city: `${city}`,
-          });
-          toastNotifications.info('Location fetched successfully!');
-        } else {
-          toastNotifications.error('Location not found.');
-        }
-      })
-      .catch(() => toastNotifications.error('Error fetching location data.'));
+    const canisterActor = createActor(canisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+
+    try {
+      const checkCityResponse = JSON.parse(await canisterActor.get_user_city(lat.toString(), lon.toString()));
+      if (checkCityResponse.results.length > 0) {
+        const location = checkCityResponse.results[0].components;
+        const city = location.city || location.town || location.village;
+        const country = location.country;
+        console.log(`City: ${city}, Country: ${country}`);
+
+        setFormData({
+          ...formData,
+          city,
+        });
+        toastNotifications.info('Location fetched successfully!');
+      } else {
+        toastNotifications.error('Location not found.');
+      }
+    } catch (err: any) {
+      toastNotifications.error('Error fetching location data.');
+    }
   };
 
   const handleChange = e => {

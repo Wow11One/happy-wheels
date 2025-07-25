@@ -1,3 +1,9 @@
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : blob;
+  headers : vec HttpHeader;
+};
 type Tire = record {
   id : text;
   tread_depth_mm : float32;
@@ -18,6 +24,7 @@ type Transaction = record {
   timestamp : nat64;
   amount : int64;
 };
+type TransformArgs = record { context : blob; response : HttpResponse };
 type User = record {
   id : text;
   photo_url : text;
@@ -35,6 +42,8 @@ service : {
   get_all_users : () -> (vec User) query;
   get_transactions_by_user : (text) -> (vec Transaction) query;
   get_user_by_principal : (text) -> (opt User) query;
+  get_user_city : (text, text) -> (text);
   recycle_tire : (text) -> ();
+  transform : (TransformArgs) -> (HttpResponse) query;
   user_exists : (text) -> (bool) query;
 }

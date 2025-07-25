@@ -17,5 +17,6 @@
       "extensions": ["dfinity-foundation.vscode-motoko"],
       "dev.containers.mountWaylandSocket": false
     }
-  }
+  },
+  "mounts": []
 }

@@ -43,9 +43,10 @@ The project includes `Makefile`, so you can start it in the local environment ju
 make deploy-all
 ```
 
-If you do not want to use `Makefile`, then you can write all required commands by yourself. You can use this command to generate IDs for the canister:
+If you do not want to use `Makefile`, then you can write all required commands by yourself. You can use this commands to start dfx and then to generate IDs for the canister:
 
 ```
+dfx start --background
 dfx canister create --all
 ```
 

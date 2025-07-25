@@ -1,3 +1,9 @@
+use ic_cdk::api::management_canister::http_request::{
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
+    TransformContext,
+};
+use serde_json::{self, Value};
+use candid::Nat;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -34,6 +40,12 @@ pub struct Tire {
     pub image_url: String,
     pub sent_to_recycle: bool,
     pub service_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Context {
+    bucket_start_time_index: usize,
+    closing_price_index: usize,
 }
 
 thread_local! {
@@ -171,6 +183,96 @@ fn recycle_tire(tire_id: String) {
 #[ic_cdk::query]
 fn get_all_users() -> Vec<User> {
     USERS.with(|users| users.borrow().values().cloned().collect())
+}
+
+#[ic_cdk::update]
+async fn get_user_city(lat: String, lon: String) -> String {
+    let apiKey = "8739517405194a86adfc82e0c169c068";
+    let url = format!("https://api.opencagedata.com/geocode/v1/json?q={lat}+{lon}&key={apiKey}&language=en");
+    let request_headers = vec![
+        HttpHeader {
+            name: "User-Agent".to_string(),
+            value: "exchange_rate_canister".to_string(),
+        },
+    ];
+    let context = Context {
+        bucket_start_time_index: 0,
+        closing_price_index: 4,
+    };
+    let request = CanisterHttpRequestArgument {
+        url: url.to_string(),
+        method: HttpMethod::GET,
+        body: None,
+        max_response_bytes: None,
+        transform: Some(TransformContext::from_name(
+            "transform".to_string(),
+            serde_json::to_vec(&context).unwrap(),
+        )),
+        headers: request_headers,
+    };
+
+    match http_request(request, 10000000000).await {
+        Ok((response,)) => {
+            let str_body = String::from_utf8(response.body)
+                .expect("Transformed response is not UTF-8 encoded.");
+
+            str_body
+        }
+        Err((r, m)) => {
+            let message =
+                format!("The http_request resulted into error. RejectionCode: {r:?}, Error: {m}");
+
+            message
+        }
+    }
+}
+
+// Strips all data that is not needed from the original response.
+#[ic_cdk::query]
+fn transform(raw: TransformArgs) -> HttpResponse {
+
+    let headers = vec![
+        HttpHeader {
+            name: "Content-Security-Policy".to_string(),
+            value: "default-src 'self'".to_string(),
+        },
+        HttpHeader {
+            name: "Referrer-Policy".to_string(),
+            value: "strict-origin".to_string(),
+        },
+        HttpHeader {
+            name: "Permissions-Policy".to_string(),
+            value: "geolocation=(self)".to_string(),
+        },
+        HttpHeader {
+            name: "Strict-Transport-Security".to_string(),
+            value: "max-age=63072000".to_string(),
+        },
+        HttpHeader {
+            name: "X-Frame-Options".to_string(),
+            value: "DENY".to_string(),
+        },
+        HttpHeader {
+            name: "X-Content-Type-Options".to_string(),
+            value: "nosniff".to_string(),
+        },
+    ];
+    
+
+    let mut res = HttpResponse {
+        status: raw.response.status.clone(),
+        body: raw.response.body.clone(),
+        headers,
+        ..Default::default()
+    };
+
+    if res.status == Nat::from(200u32) {
+
+        res.body = raw.response.body;
+    } else {
+        ic_cdk::api::print(format!("Received an error from coinbase: err = {:?}", raw));
+    }
+    res
 }
 
 type Result<T> = std::result::Result<T, String>;

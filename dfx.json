@@ -1,13 +1,5 @@
 {
   "canisters": {
-    "ic_siws_provider": {
-      "candid": "https://github.com/kristoferlund/ic-siws/releases/download/v0.0.1/ic_siws_provider.did",
-      "declarations": {
-        "output": "ic_siws_provider/declarations"
-      },
-      "type": "custom",
-      "wasm": "https://github.com/kristoferlund/ic-siws/releases/download/v0.0.1/ic_siws_provider.wasm.gz"
-    },
     "backend": {
       "candid": "backend/backend.did",
       "type": "custom",
