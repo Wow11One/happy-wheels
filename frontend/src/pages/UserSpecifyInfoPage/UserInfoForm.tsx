@@ -6,7 +6,6 @@ import { createActor, canisterId } from 'declarations/backend';
 import { ApplicationRoutes } from '../../utils/constants';
 import { AuthClient } from '@dfinity/auth-client';
 import { getFileUrl, uploadFileToPinata } from '../../utils/pinata.utils';
-import { useSiws } from 'ic-siws-js/react';
 
 const UserInfoForm = () => {
   const navigate = useNavigate();
@@ -19,7 +18,6 @@ const UserInfoForm = () => {
     city: '',
   });
   const [error, setError] = useState('');
-  const { identity: solanaIdentity } = useSiws();
 
   const getUserLocation = () => {
     if ('geolocation' in navigator) {
@@ -134,7 +132,7 @@ const UserInfoForm = () => {
 
       console.log('identity.getPrincipal().toString()', identity.getPrincipal().toString());
       await canisterActor.create_user(
-        solanaIdentity?.getPrincipal().toString() || identity.getPrincipal().toString(),
+        identity.getPrincipal().toString(),
         formData.name,
         imageUrl,
         formData.isServiceProvider,

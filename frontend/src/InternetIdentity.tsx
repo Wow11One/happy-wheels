@@ -3,7 +3,6 @@ import { AuthClient } from '@dfinity/auth-client';
 import { createActor, canisterId } from 'declarations/backend';
 import { ApplicationRoutes } from './utils/constants';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { useSiws } from 'ic-siws-js/react';
 
 const InternetIdentity = ({
   setActor,
@@ -13,8 +12,6 @@ const InternetIdentity = ({
   authClient,
   setAuthClient,
 }) => {
-  const { identity: solanaIdentity, clear } = useSiws();
-  //const { solanaIdentity, setSolanaIdentity } = useAuth();
   const [principal, setPrincipal] = useState();
 
   const navigate = useNavigate();
@@ -47,12 +44,11 @@ const InternetIdentity = ({
     await authClient.logout();
     setIsAuthenticated(false);
     navigate(ApplicationRoutes.LoginPage);
-    clear();
   }
 
   return (
     <div className='flex items-center space-x-4'>
-      {isAuthenticated || solanaIdentity ? (
+      {isAuthenticated ? (
         <>
           <p className='text-sm'>{/* <span className="font-mono">{principal}</span> */}</p>
           <button onClick={logout}>Sign Out</button>

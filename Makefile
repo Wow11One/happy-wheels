@@ -85,9 +85,6 @@ deploy-frontend:
 
 deploy-backend:
 	dfx deploy backend
-	dfx deploy dip20
-	dfx deploy nft
-	dfx deploy storage
 	dfx deploy internet_identity
 	make deploy-provider
 

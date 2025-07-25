@@ -6,10 +6,8 @@ import TireDetailModal from '../../components/TireDetailModal';
 import { Eye } from 'lucide-react';
 import { AuthClient } from '@dfinity/auth-client';
 import { createActor, canisterId } from 'declarations/backend';
-import { useSiws } from 'ic-siws-js/react';
 
 const ProfilePage = () => {
-  const { identity: solanaIdentity } = useSiws();
   const { id } = useParams();
   const navigate = useNavigate();
   const [authClient, setAuthClient] = useState();
@@ -69,16 +67,14 @@ const ProfilePage = () => {
   const isCurrentUserProfile = () => {
     return (
       !id ||
-      id === authClient?.getIdentity().getPrincipal().toString() ||
-      (!!solanaIdentity && solanaIdentity.getPrincipal().toString() === id)
+      id === authClient?.getIdentity().getPrincipal().toString()
     );
   };
 
   const getAuthClient = async () => {
     const authClient = await AuthClient.create();
     const identity = authClient.getIdentity();
-    const currentUserId =
-      id || solanaIdentity?.getPrincipal().toString() || identity.getPrincipal().toString();
+    const currentUserId = id || identity.getPrincipal().toString();
     setAuthClient(authClient);
 
     const canisterActor = createActor(canisterId, {
@@ -193,9 +189,7 @@ const ProfilePage = () => {
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Account ID</label>
                   <p className='text-white font-mono'>
-                    {id ||
-                      solanaIdentity?.getPrincipal().toString() ||
-                      (authClient && authClient.getIdentity().getPrincipal().toString())}
+                    {id || (authClient && authClient.getIdentity().getPrincipal().toString())}
                   </p>
                 </div>
                 <div>

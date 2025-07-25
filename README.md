@@ -17,7 +17,7 @@ The `backend` folder contains the **Rust smart contract**, which handles the cor
 - **Transaction**
 - **Tire**
 
-These entities are implemented as Rust `struct`s and stored using `Vector` and `HashMap` data structures for efficient access and management.
+These entities are implemented as Rust `structs` and stored using `Vector` and `HashMap` data structures for efficient access and management.
 
 ---
 
@@ -34,6 +34,40 @@ The frontend also integrates with external APIs to enhance functionality:
 
 
 This structure ensures a clear separation between the application’s logic (smart contract) and its presentation (user interface), enabling maintainability and scalability.
+
+## How to start project locally
+
+The project includes `Makefile`, so you can start it in the local environment just using the command:
+
+```
+make deploy-all
+```
+
+If you do not want to use `Makefile`, then you can write all required commands by yourself. You can use this command to generate IDs for the canister:
+
+```
+dfx canister create --all
+```
+
+To deploy the backend canisters for local development:
+
+```
+dfx deploy backend
+dfx deploy internet_identity
+```
+
+To deploy the frontend canister for local development:
+
+```
+dfx deploy frontend
+```
+
+To run the frontend part in a watch mode:
+
+```
+npm install
+npm run dev
+```
 
 ## Expected Results:
 
