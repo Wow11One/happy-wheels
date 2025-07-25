@@ -10,7 +10,7 @@ export const userStorageErrorsAtom = atom<UserStorageErrors>({
 
 export const usersAtom = atom<User[]>([]);
 
-export const createUserAtom = atom(null, async (get, set, data: CreateUserDto) => {
+export const createUserAtom = atom(null, async (get, set, data: CreateUserDto): Promise<void> => {
   try {
     set(userStorageErrorsAtom, { ...get(userStorageErrorsAtom), create: null });
 

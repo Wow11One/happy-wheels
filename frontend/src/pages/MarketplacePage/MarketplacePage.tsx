@@ -1,11 +1,11 @@
-import { AuthClient } from '@dfinity/auth-client';
 import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import { useState, useEffect } from 'react';
-import { createActor, canisterId } from 'declarations/backend';
+import { useTire } from '../../hooks/tire.hooks';
+import { Tire } from '../../../../src/declarations/backend/backend.did';
 
 const Marketplace = () => {
-  const [tires, setTires] = useState([]);
-  const [filteredTires, setFilteredTires] = useState([]);
+  const [tires, setTires] = useState<Tire[]>([]);
+  const [filteredTires, setFilteredTires] = useState<Tire[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     brand: '',
@@ -15,6 +15,7 @@ const Marketplace = () => {
     maxPrice: '',
     location: '',
   });
+  const { fetchAllTires } = useTire();
 
   // Mock tire data
   const mockTires = [
@@ -118,16 +119,9 @@ const Marketplace = () => {
 
   const getAuthClient = async () => {
     setLoading(true);
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
 
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-
-    const tires = (await canisterActor.get_all_tires()).filter(tire => !tire.sent_to_recycle);
+    const allTires = await fetchAllTires();
+    const tires = allTires.filter(tire => !tire.sent_to_recycle);
 
     console.log('TIRES', tires);
 

@@ -20,7 +20,7 @@ export const authUserAtom = atom<AuthUser>({ isAuthenticated: false });
 
 export const fetchAuthUserAtom = atom(
   get => get(authUserAtom),
-  async (get, set) => {
+  async (get, set): Promise<AuthUser> => {
     try {
       set(authStorageErrorsAtom, { ...get(authStorageErrorsAtom), fetchAuthUser: null });
       set(isFetchingAuthenticationAtom, true);
@@ -121,7 +121,7 @@ export const loginAtom = atom(null, async (get, set): Promise<LoginResponse> => 
   }
 });
 
-export const logoutAtom = atom(null, async (get, set) => {
+export const logoutAtom = atom(null, async (get, set): Promise<AuthUser> => {
   try {
     set(authStorageErrorsAtom, { ...get(authStorageErrorsAtom), logout: null });
     const authUser = get(authUserAtom);
