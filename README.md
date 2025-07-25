@@ -1,15 +1,39 @@
 # Happy wheels
 
+![Happy wheels](https://res.cloudinary.com/dbkgbcqcf/image/upload/v1753361335/happy_whells_preview_uy3iji.png)
+
 This project is a decentralised marketplace for the secondary tyre market, built on the Internet Computer Protocol (ICP). It leverages artificial intelligence to automatically assess the condition of used tyres through image analysis. This enables users to determine whether a tyre is still suitable for resale or should be sent for recycling.
 
 The platform enhances user experience with smart features such as automatic geolocation, which helps identify nearby tyre service stations and recycling points. By combining blockchain technology with AI, the solution ensures transparency, trust, and sustainability in the used tyre ecosystem.
 
-This example application is written in Rust, TypeScript (React).
+This application is written in Rust, TypeScript (React).
 
-## Project structure
+## Project Structure
 
- - The `backend` folder contains the Rust smart contract, used mostly for authentication purposes.
- - The `frontend` folder contains web assets for the application's user interface. The user interface is written using the React framework.
+### `backend`
+The `backend` folder contains the **Rust smart contract**, which handles the core application logic. It defines and manages three primary entities:
+
+- **User**
+- **Transaction**
+- **Tire**
+
+These entities are implemented as Rust `struct`s and stored using `Vector` and `HashMap` data structures for efficient access and management.
+
+---
+
+### `frontend`
+The `frontend` folder includes all web assets responsible for the **user interface**. It is developed using:
+
+- **React** – for building dynamic and interactive UIs.
+- **TailwindCSS** – for responsive and modern styling.
+
+The frontend also integrates with external APIs to enhance functionality:
+
+-  **Gemini AI API** – analyses uploaded tyre images and descriptions to determine whether a tyre should be **recycled** or **resold**.
+-  **OpenCageData API** – simplifies the process of locating tyre service providers in the user’s city.
+
+
+This structure ensures a clear separation between the application’s logic (smart contract) and its presentation (user interface), enabling maintainability and scalability.
 
 ## Expected Results:
 

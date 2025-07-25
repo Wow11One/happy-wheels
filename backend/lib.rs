@@ -101,10 +101,13 @@ fn estimate_price(size: String, tread: f32, year: u16) -> Option<u32> {
         "225/45 R17" => 800,
         _ => 500,
     };
+
+    // the formula, that calculates the tyre price automatically
     let current_year = 2025;
     let age_factor = (current_year - year).min(10) as f32 * 0.05;
     let tread_factor = (8.0 - tread).min(8.0) / 8.0;
     let discount = (age_factor + tread_factor).min(0.9);
+
     Some((base_price as f32 * (1.0 - discount)).round() as u32)
 }
 
