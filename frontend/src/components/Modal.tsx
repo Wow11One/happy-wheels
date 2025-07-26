@@ -51,7 +51,7 @@ const Modal: FC<ModalProps> = ({
             <div className='flex items-center text-white'>
               {!!title?.length && (
                 <h3
-                  className={`text-3xl font-[700] font-mono flex-1 text-center px-12 ${titleClassName}`}
+                  className={`text-2xl font-[700] font-mono flex-1 text-center px-12 ${titleClassName}`}
                 >
                   {title}
                 </h3>
@@ -63,7 +63,7 @@ const Modal: FC<ModalProps> = ({
                 />
               )}
             </div>
-            <div className='relative flex flex-col flex-1 overflow-y-scroll pe-5 -me-5 with-scrollbar modal-content'>
+            <div className='relative flex flex-col flex-1 pe-5 -me-5 modal-content'>
               {children}
             </div>
 

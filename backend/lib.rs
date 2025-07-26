@@ -145,6 +145,18 @@ fn create_transaction(id: String, amount: i64, description: String, ) {
     TRANSACTIONS.with(|txs| txs.borrow_mut().push(tx));
 }
 
+#[ic_cdk::update]
+fn create_user_transaction(id: String, amount: i64, description: String, user_id: String) {
+    let tx = Transaction {
+        id,
+        user_id,
+        amount,
+        timestamp: time(),
+        description,
+    };
+    TRANSACTIONS.with(|txs| txs.borrow_mut().push(tx));
+}
+
 #[ic_cdk::query]
 fn get_all_tires() -> Vec<Tire> {
     TIRES.with(|tires| tires.borrow().values().cloned().collect())
@@ -172,10 +184,21 @@ fn change_tire_owner(tire_id: String, new_owner: String) {
 }
 
 #[ic_cdk::update]
-fn recycle_tire(tire_id: String) {
+fn recycle_tire(tire_id: String, amount: i64) {
     TIRES.with(|tires| {
         if let Some(tire) = tires.borrow_mut().get_mut(&tire_id) {
             tire.sent_to_recycle = true;
+
+            
+            let brand = tire.brand.clone();
+            let tx = Transaction {
+                id: tire_id,
+                user_id: tire.user_id.clone(),
+                amount,
+                timestamp: time(),
+                description: format!("10 % for recycling tire \"{brand}\""),
+            };
+            TRANSACTIONS.with(|txs| txs.borrow_mut().push(tx));
         }
     });
 }

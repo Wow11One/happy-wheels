@@ -35,8 +35,11 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
         identity,
       },
     });
-    await canisterActor.recycle_tire(tire.id);
-    toastNotifications.success('Tire recycled!');
+
+    const amount = Math.round(Number(tire.price) * 0.1);
+
+    await canisterActor.recycle_tire(tire.id, amount);
+    toastNotifications.success('Tire recycled successfully!');
     setGeminiResult('');
     onClose();
   };
@@ -290,12 +293,7 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
               <div>Analyse with gemini</div>
             </div>
           </button>
-          {/* <button
-                        onClick={handleDelete}
-                        className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-lg transition-colors font-medium"
-                    >
-                        Delete Listing
-                    </button> */}
+
           <button onClick={sentForRecycle}>
             <div className='flex items-center gap-3 !rounded-lg'>
               <Recycle size={18} />

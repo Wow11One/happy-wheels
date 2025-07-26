@@ -16,106 +16,6 @@ const Marketplace = () => {
     location: '',
   });
 
-  // Mock tire data
-  const mockTires = [
-    {
-      id: 1,
-      brand: 'Michelin',
-      model: 'Pilot Sport 4',
-      size: '225/45R17',
-      condition: 'Excellent',
-      price: 120,
-      location: 'New York',
-      seller: "John's Tire Shop",
-      sellerId: 'seller1',
-      isServiceProvider: true,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'High-performance summer tire with excellent grip',
-      treadDepth: '8mm',
-      manufactureYear: '2022',
-    },
-    {
-      id: 2,
-      brand: 'Bridgestone',
-      model: 'Turanza T005',
-      size: '205/55R16',
-      condition: 'Good',
-      price: 85,
-      location: 'Los Angeles',
-      seller: 'Mike Wilson',
-      sellerId: 'seller2',
-      isServiceProvider: false,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'All-season tire with good fuel efficiency',
-      treadDepth: '6mm',
-      manufactureYear: '2021',
-    },
-    {
-      id: 3,
-      brand: 'Continental',
-      model: 'ContiEcoContact 6',
-      size: '195/65R15',
-      condition: 'Very Good',
-      price: 95,
-      location: 'Chicago',
-      seller: 'AutoCare Services',
-      sellerId: 'seller3',
-      isServiceProvider: true,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'Eco-friendly tire with low rolling resistance',
-      treadDepth: '7mm',
-      manufactureYear: '2022',
-    },
-    {
-      id: 4,
-      brand: 'Goodyear',
-      model: 'Eagle F1 Asymmetric 5',
-      size: '245/40R18',
-      condition: 'Excellent',
-      price: 140,
-      location: 'Miami',
-      seller: 'Speed Tire Center',
-      sellerId: 'seller4',
-      isServiceProvider: true,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'Premium performance tire for sports cars',
-      treadDepth: '9mm',
-      manufactureYear: '2023',
-    },
-    {
-      id: 5,
-      brand: 'Pirelli',
-      model: 'Cinturato P7',
-      size: '215/60R16',
-      condition: 'Good',
-      price: 100,
-      location: 'Seattle',
-      seller: 'Sarah Johnson',
-      sellerId: 'seller5',
-      isServiceProvider: false,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'Comfortable touring tire with good wet performance',
-      treadDepth: '5.5mm',
-      manufactureYear: '2021',
-    },
-    {
-      id: 6,
-      brand: 'Yokohama',
-      model: 'ADVAN Sport V105',
-      size: '255/35R19',
-      condition: 'Very Good',
-      price: 160,
-      location: 'Denver',
-      seller: 'Mountain Tire Co.',
-      sellerId: 'seller6',
-      isServiceProvider: true,
-      image: '/placeholder.svg?height=200&width=200',
-      description: 'Ultra-high performance tire for luxury vehicles',
-      treadDepth: '7.5mm',
-      manufactureYear: '2022',
-    },
-  ];
-
   const getAuthClient = async () => {
     setLoading(true);
     const authClient = await AuthClient.create();
@@ -336,9 +236,7 @@ const Marketplace = () => {
                   >
                     <div className='h-48 bg-gray-800 flex items-center justify-center'>
                       <img
-                        src={
-                          'https://glosbe.com/fb_img/profilePageAvatar/Uu335132_Goodyear_Wrangler_SR-A_P23570R16_2.jpg.cvrt.jpg'
-                        }
+                        src={tire.image_url}
                         alt={`${tire.brand} ${tire.model}`}
                         className='max-w-full max-h-full object-cover'
                       />

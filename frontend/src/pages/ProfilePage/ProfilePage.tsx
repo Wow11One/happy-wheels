@@ -6,15 +6,20 @@ import TireDetailModal from '../../components/TireDetailModal';
 import { CreditCard, Eye } from 'lucide-react';
 import { AuthClient } from '@dfinity/auth-client';
 import { createActor, canisterId } from 'declarations/backend';
+import Modal from '../../components/Modal';
+import toastNotifications from '../../utils/toastNotifications.utils';
 
 const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [authClient, setAuthClient] = useState();
   const [currentUser, setCurrentUser] = useState();
-  const [balance, setBalance] = useState();
+  const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState();
-  const [tires, setTires] = useState();
+  const [tires, setTires] = useState([]);
+  const [authenticatedUserTires, setAuthenticatedUserTires] = useState([]);
+  const [isAuthenticatedUserTiresModalVisible, setIsAuthenticatedUserTiresModalVisible] = useState(false);
+  const [selectedTireId, setSelectedTireId] = useState('');
 
   const user = {
     name: 'John Doe',
@@ -71,7 +76,8 @@ const ProfilePage = () => {
   const getAuthClient = async () => {
     const authClient = await AuthClient.create();
     const identity = authClient.getIdentity();
-    const currentUserId = id || identity.getPrincipal().toString();
+    const authenticatedUserId = identity.getPrincipal().toString();
+    const currentUserId = id || authenticatedUserId;
     setAuthClient(authClient);
 
     const canisterActor = createActor(canisterId, {
@@ -86,17 +92,145 @@ const ProfilePage = () => {
       currUser,
     );
     const transactions = await canisterActor.get_transactions_by_user(currentUserId);
-    const transactionsSum = transactions.reduce((a, b) => a.amount + b.amount, 0);
+    let transactionsSum = 0;
+    transactions.forEach((transaction: any) => {
+      transactionsSum += Number(transaction.amount);
+    });
     const tires = (await canisterActor.get_all_tires()).filter(
-      tire => tire.user_id === currentUserId,
+      tire => currUser?.is_service ? tire.service_id[0] === currentUserId : (tire.user_id === currentUserId && !tire.service_id?.length),
     );
 
-    console.log(tires);
+    const authenticatedUserTires = (await canisterActor.get_all_tires()).filter(
+      tire => tire.user_id === authenticatedUserId && !tire.service_id?.length,
+    );
+
+    console.log('tires', await canisterActor.get_all_tires());
     setTires(tires);
+    setAuthenticatedUserTires(authenticatedUserTires);
     setCurrentUser(currUser);
-    setBalance(transactionsSum);
+    setBalance(Number(transactionsSum));
     setTransactions(transactions);
   };
+
+  const giveTire = async () => {
+    try {
+      const authClient = await AuthClient.create();
+      const identity = authClient.getIdentity();
+      const canisterActor = createActor(canisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+
+      await canisterActor.assign_tire_to_service(
+        selectedTireId,
+        id
+      );
+      setTires([
+        ...(tires || []),
+        ...(authenticatedUserTires.filter(authTire => authTire.id === selectedTireId) || [])
+      ] as any);
+      setAuthenticatedUserTires([
+        ...(authenticatedUserTires.filter(authTire => authTire.id !== selectedTireId) || [])
+      ]);
+      setSelectedTireId('');
+      setIsAuthenticatedUserTiresModalVisible(false);
+      toastNotifications.success('Tire was successfully given to the service provider')
+    } catch (err: any) {
+      toastNotifications.error('Error while passing the tire')
+    }
+  };
+
+  const topUpBalance = async () => {
+    try {
+      const authClient = await AuthClient.create();
+      const identity = authClient.getIdentity();
+      const canisterActor = createActor(canisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+
+      const newTransactionId = crypto.randomUUID();
+      const description = 'money for the love to the icp';
+      await canisterActor.create_transaction(
+        newTransactionId,
+        1000,
+        description
+      );
+      setTransactions([
+        ...(transactions || []),
+        {
+          id: newTransactionId,
+          user_id: currentUser!.id,
+          amount: 1000,
+          description,
+          timestamp: new Date().getTime()
+        }
+      ] as any);
+      setBalance((prevValue: number) => prevValue + 1000);
+      toastNotifications.success('You successfully added funds to your balance!')
+    } catch (err: any) {
+      toastNotifications.error('Error while adding funds')
+    }
+  };
+
+  const buyTire = async (tireId: string) => {
+    try {
+      const authClient = await AuthClient.create();
+      const identity = authClient.getIdentity();
+      const canisterActor = createActor(canisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+
+      const tire = tires?.filter(tire => tire.id === tireId)[0];
+
+      if (tire) {
+        let transactionId = crypto.randomUUID();
+        let description = `money spent to buy the tire "${tire.brand}"`;
+        await canisterActor.create_user_transaction(
+          transactionId,
+          BigInt(-tire.price),
+          description,
+          identity.getPrincipal().toString()
+        );
+
+        transactionId = crypto.randomUUID();
+        description = `50 % of money received from selling the tire "${tire.brand}"`;
+        await canisterActor.create_user_transaction(
+          transactionId,
+          BigInt(Math.round(Number(tire.price) * 0.5)),
+          description,
+          tire.service_id[0] || ''
+        );
+
+        transactionId = crypto.randomUUID();
+        await canisterActor.create_user_transaction(
+          transactionId,
+          BigInt(Math.round(Number(tire.price) * 0.5)),
+          description,
+          tire.user_id
+        );
+
+        await canisterActor.change_tire_owner(
+          tire.id,
+          identity.getPrincipal().toString()
+        );
+
+        setTires(
+          tires.filter(listTire => tire.id !== listTire.id)
+        )
+
+        toastNotifications.success('You successfully bought a tire!')
+      }
+    } catch (err: any) {
+      console.log(err)
+      toastNotifications.error('Error while buying a tire')
+    }
+  };
+
 
   useEffect(() => {
     getAuthClient();
@@ -112,6 +246,36 @@ const ProfilePage = () => {
 
   return (
     <>
+      {isAuthenticatedUserTiresModalVisible && (
+        <Modal
+          className='max-w-[668px]'
+          title='Select tire to give to the service'
+          onClose={() => setIsAuthenticatedUserTiresModalVisible(false)}
+        >
+          <div className='flex flex-col gap-4 items-center mt-10 w-full'>
+            <div className='w-[50%]'>
+              <select
+                id='size'
+                name='size'
+                value={selectedTireId}
+                onChange={(event) => setSelectedTireId(event.target.value)}
+                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white focus:outline-none focus:ring-2 transition-colors`}
+              >
+                <option value=''>Select tire to give</option>
+                {authenticatedUserTires.map(tire => (
+                  <option key={tire.id} value={tire.id}>
+                    {tire.brand}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button onClick={giveTire} disabled={!selectedTireId}>
+              Give tire
+            </button>
+          </div>
+
+        </Modal>
+      )}
       <div className='container'>
         <div className='card !bg-gray-900'>
           <div className='flex items-center mb-4'>
@@ -196,9 +360,11 @@ const ProfilePage = () => {
                 <div>
                   <label className='block text-gray-400 text-sm font-medium mb-1'>Actions</label>
                   <div className='flex gap-4'>
-                    <button>I love ICP</button>
+                    <button onClick={topUpBalance}>I love ICP</button>
                     {!isCurrentUserProfile() && !!currentUser?.is_service && (
-                      <button>Give tires</button>
+                      <button onClick={() => setIsAuthenticatedUserTiresModalVisible(true)}>
+                        Give tires
+                      </button>
                     )}
                     {isCurrentUserProfile() && (
                       <button onClick={() => navigate(ApplicationRoutes.TyreCreateForm)}>
@@ -255,9 +421,9 @@ const ProfilePage = () => {
                           <Eye size={14} />
                           View
                         </button>
-                        {!tire.sent_to_recycle && (
+                        {!tire.sent_to_recycle && !!currentUser.is_service && (
                           <button
-                            // onClick={() => handleTireClick(tire)}
+                            onClick={() => buyTire(tire.id)}
                             className='flex-1  text-white py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-1'
                           >
                             <CreditCard size={14} />
@@ -289,24 +455,22 @@ const ProfilePage = () => {
                     <thead>
                       <tr className='border-b border-gray-700'>
                         <th className='text-left py-3 px-4 font-medium text-gray-400'>Date</th>
-                        <th className='text-left py-3 px-4 font-medium text-gray-400'>Type</th>
-                        <th className='text-left py-3 px-4 font-medium text-gray-400'>Item</th>
+                        <th className='text-left py-3 px-4 font-medium text-gray-400'>Description</th>
                         <th className='text-left py-3 px-4 font-medium text-gray-400'>Amount</th>
                         <th className='text-left py-3 px-4 font-medium text-gray-400'>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {user.transactions.map((transaction, index) => (
+                      {transactions.map((transaction, index) => (
                         <tr key={index} className='border-b border-gray-800'>
-                          <td className='py-3 px-4'>{transaction?.date}</td>
-                          <td className='py-3 px-4'>{transaction?.type}</td>
-                          <td className='py-3 px-4'>{transaction?.item}</td>
+                          <td className='py-3 px-4'>{new Date().toLocaleDateString()}</td>
+                          <td className='py-3 px-4'>{transaction?.description}</td>
                           <td
-                            className={`py-3 px-4 ${transaction?.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                            className={`py-3 px-4 ${Number(transaction?.amount) >= 0 ? 'text-green-400' : 'text-red-400'}`}
                           >
-                            ${transaction.amount}
+                            {Number(transaction.amount)}$
                           </td>
-                          <td className='py-3 px-4'>{transaction?.status}</td>
+                          <td className='py-3 px-4'>Completed</td>
                         </tr>
                       ))}
                     </tbody>
@@ -329,8 +493,8 @@ const ProfilePage = () => {
         tire={selectedTire}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onEdit={() => {}}
-        onDelete={() => {}}
+        onEdit={() => { }}
+        onDelete={() => { }}
       />
     </>
   );
