@@ -13,5 +13,8 @@
     "@coral-xyz/anchor": "0.29.0",
     "@solana/web3.js": "^1.98.2",
     "lucide-react": "^0.485.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0"
   }
 }

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { X, Calendar, Gauge, MapPin, User, Recycle, GemIcon } from 'lucide-react';
 import toastNotifications from '../utils/toastNotifications.utils';
-import { AuthClient } from '@dfinity/auth-client';
-import { createActor, canisterId } from 'declarations/backend';
+import { useTire } from '../hooks/tire.hooks';
 
 const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
   const [imageError, setImageError] = useState(false);
   const [geminiResult, setGeminiResult] = useState();
+  const { recycleTire } = useTire();
 
   if (!isOpen || !tire) return null;
 
@@ -28,14 +28,8 @@ const TireDetailModal = ({ tire, isOpen, onClose, onEdit, onDelete }) => {
   };
 
   const sentForRecycle = async () => {
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-    await canisterActor.recycle_tire(tire.id);
+    await recycleTire(tire.id);
+
     toastNotifications.success('Tire recycled!');
     setGeminiResult('');
     onClose();
