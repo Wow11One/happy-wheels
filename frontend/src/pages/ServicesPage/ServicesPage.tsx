@@ -107,35 +107,28 @@ const ServiceProviders = () => {
     return stars;
   };
 
-  const getCityAndCountry = async (lat: number, lon: number) => {
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
+  const getCityAndCountry = (lat, lon) => {
+    const apiKey = '8739517405194a86adfc82e0c169c068';
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${apiKey}&language=en`;
 
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-
-    try {
-      const checkCityResponse = JSON.parse(await canisterActor.get_user_city(lat.toString(), lon.toString()));
-      if (checkCityResponse.results.length > 0) {
-        const location = checkCityResponse.results[0].components;
-        const city = location.city || location.town || location.village;
-        const country = location.country;
-        console.log(`City: ${city}, Country: ${country}`);
-
-        setFilters({
-          ...filters,
-          location: `${city}`,
-        });
-        toastNotifications.info('Location fetched successfully!');
-      } else {
-        toastNotifications.error('Location not found.');
-      }
-    } catch (err: any) {
-      toastNotifications.error('Error fetching location data.');
-    }
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.results.length > 0) {
+          const location = data.results[0].components;
+          const city = location.city || location.town || location.village;
+          const country = location.country;
+          console.log(`City: ${city}, Country: ${country}`);
+          setFilters({
+            ...filters,
+            location: `${city}`,
+          });
+          toastNotifications.info('Location fetched successfully!');
+        } else {
+          toastNotifications.error('Location not found.');
+        }
+      })
+      .catch(() => toastNotifications.error('Error fetching location data.'));
   };
 
   const getUserLocation = () => {

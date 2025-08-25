@@ -48,7 +48,9 @@ const UserInfoForm = () => {
     });
 
     try {
-      const checkCityResponse = JSON.parse(await canisterActor.get_user_city(lat.toString(), lon.toString()));
+      const checkCity = await canisterActor.get_user_city(lat.toString(), lon.toString());
+      console.log('checkCity', checkCity)
+      const checkCityResponse = JSON.parse(checkCity);
       if (checkCityResponse.results.length > 0) {
         const location = checkCityResponse.results[0].components;
         const city = location.city || location.town || location.village;
@@ -64,6 +66,7 @@ const UserInfoForm = () => {
         toastNotifications.error('Location not found.');
       }
     } catch (err: any) {
+      console.log(err)
       toastNotifications.error('Error fetching location data.');
     }
   };

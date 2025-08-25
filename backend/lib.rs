@@ -234,7 +234,7 @@ async fn get_user_city(lat: String, lon: String) -> String {
         headers: request_headers,
     };
 
-    match http_request(request, 10000000000).await {
+    match http_request(request, 22000000000).await {
         Ok((response,)) => {
             let str_body = String::from_utf8(response.body)
                 .expect("Transformed response is not UTF-8 encoded.");
