@@ -2,9 +2,8 @@ import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toastNotifications from '../../utils/toastNotifications.utils';
-import { createActor, canisterId } from 'declarations/backend';
 import { uploadFileToPinata, getFileUrl } from '../../utils/pinata.utils';
-import { AuthClient } from '@dfinity/auth-client';
+import { useTire } from '../../hooks/tire.hooks';
 
 const AddTire = () => {
   const navigate = useNavigate();
@@ -22,6 +21,7 @@ const AddTire = () => {
     profileImage: null,
   });
   const [errors, setErrors] = useState({});
+  const { createTire } = useTire();
 
   const tireSizes = ['205/55 R16', '215/60 R16', '225/45 R17'];
   const treadDepthOptions = [2, 3, 4, 5, 6, 7, 8, 9];
@@ -71,14 +71,6 @@ const AddTire = () => {
       return;
     }
 
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
-
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -89,15 +81,16 @@ const AddTire = () => {
         imageUrl = getFileUrl(uriIc);
       }
 
-      await canisterActor.create_tire(
-        crypto.randomUUID(),
-        formData.brand,
-        formData.size,
-        formData.season,
-        Number(formData.treadDepth),
-        Number(formData.productionYear),
+      await createTire({
+        uuid: crypto.randomUUID(),
+        brand: formData.brand,
+        size: formData.size,
+        season: formData.season,
+        treadDepth: Number(formData.treadDepth),
+        productionYear: Number(formData.productionYear),
         imageUrl,
-      );
+      });
+
       toastNotifications.success('Tire listing added successfully!');
       // navigate("/marketplace")
     } catch (error) {

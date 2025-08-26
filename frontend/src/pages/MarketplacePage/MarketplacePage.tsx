@@ -1,11 +1,15 @@
-import { AuthClient } from '@dfinity/auth-client';
 import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
 import { useState, useEffect } from 'react';
-import { createActor, canisterId } from 'declarations/backend';
+import { useTire } from '../../hooks/tire.hooks';
+import { Tire } from '../../../../src/declarations/backend/backend.did';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
+
 
 const Marketplace = () => {
-  const [tires, setTires] = useState([]);
-  const [filteredTires, setFilteredTires] = useState([]);
+  const [tires, setTires] = useState<Tire[]>([]);
+  const [filteredTires, setFilteredTires] = useState<Tire[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     brand: '',
@@ -15,19 +19,15 @@ const Marketplace = () => {
     maxPrice: '',
     location: '',
   });
+  const [aiQuery, setAiQuery] = useState("");
+
+  const { fetchAllTires } = useTire();
 
   const getAuthClient = async () => {
     setLoading(true);
-    const authClient = await AuthClient.create();
-    const identity = authClient.getIdentity();
 
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-
-    const tires = (await canisterActor.get_all_tires()).filter(tire => !tire.sent_to_recycle);
+    const allTires = await fetchAllTires();
+    const tires = allTires.filter(tire => !tire.sent_to_recycle);
 
     console.log('TIRES', tires);
 
@@ -39,6 +39,34 @@ const Marketplace = () => {
   useEffect(() => {
     getAuthClient();
   }, []);
+
+  const handleAiSearch = async () => {
+    if (!aiQuery.trim()) return;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+  Extract structured tire filters from this user request: "${aiQuery}".
+  Return JSON with keys: brand, size, condition, minPrice, maxPrice, location.
+  Example:
+  { "brand": "Michelin", "size": "225/45R17", "condition": "Good", "minPrice": "50", "maxPrice": "150", "location": "Kyiv" }
+  `;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+
+    try {
+      const parsed = JSON.parse(text);
+      setFilters(prev => ({
+        ...prev,
+        ...parsed,
+      }));
+    } catch (err) {
+      console.error("AI parsing error", err, text);
+      alert("Could not understand your request, please try again.");
+    }
+  };
+
 
   useEffect(() => {
     setTimeout(() => {
@@ -132,6 +160,25 @@ const Marketplace = () => {
                   Clear All
                 </button>
               </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">AI Search</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={aiQuery}
+                    onChange={e => setAiQuery(e.target.value)}
+                    placeholder="e.g., cheap winter tires in Kyiv"
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button
+                    onClick={handleAiSearch}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+
 
               <div className='space-y-6'>
                 <div>

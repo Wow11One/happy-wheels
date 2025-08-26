@@ -1,51 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
-import { createActor, canisterId } from 'declarations/backend';
-import { AuthClient } from '@dfinity/auth-client';
-import { ApplicationRoutes } from '../../utils/constants';
-import toastNotifications from '../../utils/toastNotifications.utils';
 import LoadingSpinner from '../../components/TyreLoading/TyreLoading';
-
-const network = process.env.DFX_NETWORK;
-const identityProvider =
-  network === 'ic'
-    ? 'https://identity.ic0.app'
-    : 'http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943';
+import { useAuth } from '../../hooks/auth.hooks';
 
 function LoginPage() {
   const [isConnectingIdentity, setIsConnectingIdentity] = useState(false);
-  const navigate = useNavigate();
-
-  const checkIfUserExists = async (authClient: AuthClient) => {
-    const identity = authClient.getIdentity();
-    const canisterActor = createActor(canisterId, {
-      agentOptions: {
-        authClient,
-      },
-    });
-
-    const isUserFirstLoggedIn = !(await canisterActor.user_exists(
-      identity.getPrincipal().toString(),
-    ));
-    if (isUserFirstLoggedIn) {
-      navigate(ApplicationRoutes.UserSpecifyInfo);
-    } else {
-      navigate(ApplicationRoutes.Profile);
-    }
-  };
+  const { login } = useAuth();
 
   const loginWithInternetIdentity = async () => {
     setIsConnectingIdentity(true);
-    const authClient = await AuthClient.create();
-    await authClient.login({
-      identityProvider,
-      onSuccess: async () => {
-        //const authClient.
-        checkIfUserExists(authClient);
-        console.log('Login Successful!');
-      },
-    });
+    await login();
     setIsConnectingIdentity(false);
   };
 

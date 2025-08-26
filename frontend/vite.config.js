@@ -24,10 +24,10 @@ export default defineConfig({
     environment('all', { prefix: 'CANISTER_' }),
     environment('all', { prefix: 'DFX_' }),
     nodePolyfills(),
-
   ],
   define: {
     'process.env': process.env,
+    global: 'window',
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -35,20 +35,21 @@ export default defineConfig({
         global: 'globalThis',
       },
     },
+    include: ['assert', 'buffer', 'process', 'stream-browserify', 'url', 'os'],
   },
   resolve: {
     alias: [
       {
         find: 'declarations',
         replacement: fileURLToPath(new URL('../src/declarations', import.meta.url)),
-        // assert: 'assert',
-        // buffer: 'buffer',
-        // process: 'process',
-        // 'process/browser': 'process/browser',
-        // stream: 'stream-browserify',
-        // crypto: 'crypto-browserify',
-        // url: 'url',
-        // os: 'os-browserify',
+        assert: 'assert',
+        buffer: 'buffer',
+        process: 'process',
+        'process/browser': 'process/browser',
+        stream: 'stream-browserify',
+        crypto: 'crypto-browserify',
+        url: 'url',
+        os: 'os-browserify',
       },
     ],
   },
